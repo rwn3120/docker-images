@@ -5,8 +5,8 @@ LABEL maintainer="radowan <radek.strejc@gmail.com>"
 ARG DEBIAN_FRONTEND=noninteractive
 
 # retrieve new lists of packages & install utils
-RUN apt-get update \
-    && apt-get install -y \
+RUN apt-get update
+RUN apt-get install -y \
         vim-tiny wget curl telnet mc openssh-client
 
 
