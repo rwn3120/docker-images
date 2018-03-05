@@ -51,7 +51,6 @@ TAG="${REPO}/${NAME}:latest"
 out "Processing ${TAG} ..."
 
 # build image
-out "... building"
 docker build \
     -t "${TAG}" \
     -f "${DOCKERFILE}" \
@@ -62,4 +61,4 @@ if [ "${PUSH}" == "yes" ]; then
     out "... pushing to repo"
     docker push "${TAG}"
 fi
-out "... done"
+out "... done. Run with docker run -it --rm ${TAG}"

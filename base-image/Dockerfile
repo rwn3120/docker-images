@@ -16,8 +16,8 @@ RUN update-alternatives --install /usr/bin/keytool keytool "${JAVA_HOME}/jre/bin
 ENV PATH="${PATH}":"${JAVA_HOME}/bin"
 
 RUN apt-get update \
-  	&& apt-get install -y curl wget iputils-ping telnet mc jq procps python file python-pip \
-	&& apt-get clean
+    && apt-get install -y curl wget iputils-ping telnet mc jq procps python file python-pip \
+    && apt-get clean
 
 RUN pip install gTTS
 

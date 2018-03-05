@@ -2,30 +2,38 @@ FROM radowan/oraclelinux-java-8:latest
 
 LABEL maintainer="radowan <radek.strejc@gmail.com>"
 
-# Download mysql
-RUN wget --progress=bar:force https://cdn.mysql.com/Downloads/MySQL-5.7/mysql-community-server-5.7.21-1.el7.x86_64.rpm -O /tmp/mysql-server.rpm
-RUN wget --progress=bar:force https://cdn.mysql.com/Downloads/MySQL-5.7/mysql-community-client-5.7.21-1.el7.x86_64.rpm -O /tmp/mysql-client.rpm
-RUN wget --progress=bar:force https://cdn.mysql.com/Downloads/MySQL-5.7/mysql-community-common-5.7.21-1.el7.x86_64.rpm -O /tmp/mysql-common.rpm
-RUN wget --progress=bar:force https://cdn.mysql.com/Downloads/MySQL-5.7/mysql-community-libs-5.7.21-1.el7.x86_64.rpm -O /tmp/mysql-community-libs.rpm
+ENV MYSQL_USER="mysql"
 
-# Install deps
-RUN yum -y install libaio numactl-libs net-tools
+# Install & initialize mysql
+RUN wget --progress=bar:force "https://cdn.mysql.com/Downloads/MySQL-5.7/mysql-community-server-5.7.21-1.el7.x86_64.rpm" -O "mysql-server.rpm" &&\
+    wget --progress=bar:force "https://cdn.mysql.com/Downloads/MySQL-5.7/mysql-community-client-5.7.21-1.el7.x86_64.rpm" -O "mysql-client.rpm" &&\
+    wget --progress=bar:force "https://cdn.mysql.com/Downloads/MySQL-5.7/mysql-community-common-5.7.21-1.el7.x86_64.rpm" -O "mysql-common.rpm" &&\
+    wget --progress=bar:force "https://cdn.mysql.com/Downloads/MySQL-5.7/mysql-community-libs-5.7.21-1.el7.x86_64.rpm" -O "mysql-community-libs.rpm" &&\
+    \
+    yum -y install \
+      libaio numactl-libs net-tools &&\
+    \
+    rpm -i *.rpm &&\
+    \
+    rm -f *.rpm  &&\
+    yum clean all &&\
+    \
+    mysqld \
+      --user="${MYSQL_USER}" \
+      --verbose \
+      --log-error-verbosity=3 \
+      --initialize-insecure
 
-# Install mysql
-RUN rpm -i /tmp/mysql*.rpm
-
-# Clean up
-RUN rm -f /tmp/*.rpm
-
-# Add start script
-ADD service-mysql-start.sh /usr/bin/service-mysql-start
-ADD service-mysql-stop.sh /usr/bin/service-mysql-stop
-ADD entrypoint.sh /usr/bin/entrypoint-mysql
-RUN chmod +x /usr/bin/*mysql*
+# Add start & stop scripts
+ADD mysqld-start.sh /usr/bin/mysqld-start
+ADD mysqld-stop.sh /usr/bin/mysqld-stop
 
 # expose ports
 EXPOSE 3306
 
-# Set bash as default command
-ENTRYPOINT ["entrypoint-mysql"]
+# Set entrypoint
+ADD entrypoint.sh /usr/bin/entrypoint
+ENTRYPOINT ["/usr/bin/entrypoint"]
+
+# Set default command
 CMD ["mysql"]
