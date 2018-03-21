@@ -1,0 +1,3 @@
+--build-arg MYSQL_VERSION="5.7"
+--build-arg MYSQL_PACKAGE_VERSION="5.7.21-1.el7"
+--build-arg MYSQL_USER="mysql"

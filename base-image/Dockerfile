@@ -1,10 +1,10 @@
-FROM radowan/debian-base:latest
+FROM radowan/debian:base
 
 RUN apt-get update
 
 ARG JDK_DOWNLOAD_LINK="http://download.oracle.com/otn-pub/java/jdk/8u131-b11/d54c1d3a095b4ff2b6607d096fa80163/jdk-8u131-linux-x64.tar.gz"
 ARG JDK_TGZ="/tmp/jdk.tar.gz"
-ENV JAVA_HOME="/opt/oracle-jdk-8"
+ENV JAVA_HOME="/opt/oracle-jdk"
 
 RUN wget --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" "${JDK_DOWNLOAD_LINK}" -O "${JDK_TGZ}"
 RUN mkdir "${JAVA_HOME}"

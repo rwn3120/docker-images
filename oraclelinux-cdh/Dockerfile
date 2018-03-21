@@ -1,25 +1,29 @@
-FROM radowan/oraclelinux-mysql-5.7:latest
+FROM radowan/oraclelinux-mysql:5.7
 
 LABEL maintainer="radowan <radek.strejc@gmail.com>"
 
 # Args
-ARG HADOOP_GROUP="hadoop"
-ARG HADOOP_USER="${HADOOP_GROUP}"
-ARG CDH_MAJOR_VERSION=5
-ARG CDH_MINOR_VERSION=13.1
-# for JACKSON_DATABIND_VERSION see https://mvnrepository.com/artifact/com.cloudera.api/cloudera-manager-api/5.13.1
-ARG JACKSON_DATABIND_VERSION=2.1.0
-# or PARQUET_HADOOP_VERSION see https://repository.cloudera.com/artifactory/libs-release-local/com/twitter/parquet-hadoop/1.5.0-cdh5.13.1/
-ARG PARQUET_HADOOP_VERSION=1.5.0
-# for package versions see https://www.cloudera.com/documentation/enterprise/release-notes/topics/cdh_vd_cdh_package_tarball_513.html#cm_vd_cdh_package_tarball_513
-ARG HADOOP_VERSION=2.6.0
-ARG SPARK_VERSION=1.6.0
-ARG HIVE_VERSION=1.1.0
+ARG HADOOP_GROUP
+ARG HADOOP_USER
+ARG CDH_MAJOR_VERSION
+ARG CDH_MINOR_VERSION
+ARG JACKSON_DATABIND_VERSION
+ARG PARQUET_HADOOP_VERSION
+ARG JACKSON_DATABIND_VERSION
+ARG AWS_SDK_BUNDLE
+ARG HADOOP_VERSION
+ARG SPARK_VERSION
+ARG HIVE_VERSION
 
 # Set env
 ENV CDH_VERSION="${CDH_MAJOR_VERSION}.${CDH_MINOR_VERSION}" \
     USER="${HADOOP_USER}" \
-    HADOOP_USER_HOME="/home/${HADOOP_USER}"
+    HADOOP_USER_HOME="/home/${HADOOP_USER}" \
+    HADOOP_USER="${HADOOP_USER}" \
+    HADOOP_GROUP="${HADOOP_GROUP}" \
+    HADOOP_VERSION="${HADOOP_VERSION}" \
+    SPARK_VERSION="${SPARK_VERSION}" \
+    HIVE_VERSION="${HIVE_VERSION}"
 ENV CDH_HOME="${HADOOP_USER_HOME}/cdh${CDH_VERSION}"
 ENV HADOOP_HOME="${CDH_HOME}/hadoop-${HADOOP_VERSION}" \
     SPARK_HOME="${CDH_HOME}/spark-${SPARK_VERSION}" \
@@ -61,7 +65,7 @@ RUN wget --progress=bar:force "${HADOOP_DOWNLOAD_LINK}" -O "archive.tar.gz" &&\
     wget --progress=bar:force "${HIVE_DOWNLOAD_LINK}" -O "archive.tar.gz" &&\
     tar xzf "archive.tar.gz" --directory "${HIVE_HOME}" --strip 1 &&\
     rm -f "archive.tar.gz"
-ENV JACKSON_DATABIND_VERSION=2.4.4
+
 # Download libs
 RUN cp "${SPARK_HOME}/lib/spark-${SPARK_VERSION}-cdh${CDH_VERSION}-yarn-shuffle.jar" "${HADOOP_HOME}/share/hadoop/yarn/" &&\
     wget --progress=bar:force \
@@ -74,15 +78,21 @@ RUN cp "${SPARK_HOME}/lib/spark-${SPARK_VERSION}-cdh${CDH_VERSION}-yarn-shuffle.
             "http://central.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/${JACKSON_DATABIND_VERSION}/jackson-annotations-${JACKSON_DATABIND_VERSION}.jar" \
             -P "${HADOOP_HOME}/share/hadoop/yarn/" &&\
     wget --progress=bar:force \
+            "https://repository.cloudera.com/content/repositories/releases/org/apache/hadoop/hadoop-aws/${HADOOP_VERSION}-cdh${CDH_VERSION}/hadoop-aws-${HADOOP_VERSION}-cdh${CDH_VERSION}.jar" \
+            -P "${HADOOP_HOME}/share/hadoop/yarn/" &&\
+    wget --progress=bar:force \
+            "http://central.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/${AWS_SDK_BUNDLE}/aws-java-sdk-bundle-${AWS_SDK_BUNDLE}.jar" \
+            -P "${HADOOP_HOME}/share/hadoop/yarn/" &&\
+    wget --progress=bar:force \
             "https://repository.cloudera.com/artifactory/libs-release-local/com/twitter/parquet-hadoop/${PARQUET_HADOOP_VERSION}-cdh${CDH_VERSION}/parquet-hadoop-${PARQUET_HADOOP_VERSION}-cdh${CDH_VERSION}.jar" \
             -P "${HADOOP_HOME}/share/hadoop/yarn/"
 
 # Setup hadoop
-ADD hadoop/core-site.xml \
-    hadoop/yarn-site.xml \
-    hadoop/hdfs-site.xml \
-    hadoop/mapred-site.xml \
-    hadoop/hadoop-env.sh \
+ADD conf/hadoop/core-site.xml \
+    conf/hadoop/yarn-site.xml \
+    conf/hadoop/hdfs-site.xml \
+    conf/hadoop/mapred-site.xml \
+    conf/hadoop/hadoop-env.sh \
     "${HADOOP_HOME}/etc/hadoop"/
 
 # Setup spark
@@ -98,21 +108,18 @@ RUN cp "${SPARK_HOME}/conf/slaves.template" "${SPARK_HOME}/conf/slaves" &&\
     echo "export SPARK_MASTER_IP=hadoop-master" >> "${SPARK_HOME}/conf/spark-env.sh" &&\
     echo "export HADOOP_CONF_DIR=${HADOOP_HOME}/etc/hadoop" >> "${SPARK_HOME}/conf/spark-env.sh"
 
-# Link configurations to etc
-RUN sudo mkdir -p /etc/{hadoop,spark,hive} &&\
-    sudo ln -s "${CDH_HOME}" /opt &&\
-    sudo ln -s "${HADOOP_HOME}/etc/hadoop" /etc/hadoop &&\
-    sudo ln -s "${SPARK_HOME}/conf" /etc/spark &&\
-    sudo ln -s "${HIVE_HOME}/conf" /etc/hive &&\
+# Format hdfs, prepare env
+RUN hdfs namenode -format &&\
+    ssh-setup &&\
     sudo sed -i 's/#PermitEmptyPasswords .*/PermitEmptyPasswords yes/' /etc/ssh/sshd_config &&\
-    sudo passwd -d "${HADOOP_USER}"
+    sudo passwd -d "${HADOOP_USER}" &&\
+    find "${HADOOP_USER_HOME}" -type d -exec chmod 777 {} \;
 
-# Format hdfs
-RUN hdfs namenode -format
-
-# Add start & stop scripts
-ADD hadoop-cluster-start.sh /usr/bin/hadoop-cluster-start
-ADD hadoop-cluster-stop.sh /usr/bin/hadoop-cluster-stop
+# Add scripts
+ADD scripts/hadoop-cluster-start \
+    scripts/hadoop-cluster-stop \
+    scripts/entrypoint \
+    /usr/bin/
 
 # Expose ports
 # HDFS Namenode (dfs.http.address, dfs.https.address)
@@ -139,7 +146,6 @@ EXPOSE 8030 8031 8032 8088 8090
 EXPOSE 8080 8081 7077 8042 6066 4040 18080 7337
 
 # Set entrypoint
-COPY entrypoint.sh /usr/bin/entrypoint
 ENTRYPOINT ["/usr/bin/entrypoint"]
 
 # Set default command

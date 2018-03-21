@@ -1,0 +1,20 @@
+#!/bin/bash
+
+SERVICE="mysqld"
+PID_FILE="/var/run/${SERVICE}/${SERVICE}.pid"
+PID=$(sudo -Eu "${MYSQL_USER}" cat "${PID_FILE}" 2>/dev/null)
+
+if [ "${PID}" == "" ]; then
+  echo "${SERVICE} is not running"
+  sudo -Eu "${MYSQL_USER}" rm -f "${PID_FILE}"
+  exit 0
+fi
+
+echo -n "Stopping ${SERVICE} [${PID}]..."
+sudo -Eu "${MYSQL_USER}" kill "${PID}"
+while [ -e "/proc/${PID}" ]; do
+  echo -n "."
+  sleep .5
+done
+sudo -Eu "${MYSQL_USER}" rm -f "${PID_FILE}"
+echo "${SERVICE} stopped"

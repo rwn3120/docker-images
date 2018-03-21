@@ -1,0 +1,28 @@
+#!/bin/bash -e
+
+SERVICE="mysqld"
+PID_FILE="/var/run/${SERVICE}/${SERVICE}.pid"
+
+if [ -e "${PID_FILE}" ]; then
+  PID=$(sudo -Eu "${MYSQL_USER}" cat "${PID_FILE}" 2>/dev/null)
+  if [ "${PID}" != "" ]; then
+    ps --pid "${PID}" &>/dev/null
+    if [ $? -eq 0 ]; then
+      echo "${SERVICE} is already running (pidfile ${PID_FILE})"
+      exit 0
+    fi
+  fi
+  sudo -Eu "${MYSQL_USER}" rm -f "${PID_FILE}"
+fi
+
+echo -n "Starting ${SERVICE} as ${MYSQL_USER}..."
+TIMESTAMP=$(date +%s)
+sudo -Eu "${MYSQL_USER}" nohup mysqld \
+  --explicit_defaults_for_timestamp \
+  --log-error-verbosity=3 &>/tmp/${SERVICE}.${TIMESTAMP}.nohup &
+while ! mysqladmin ping --silent &>/dev/null; do
+  echo -n "."
+  sleep 1
+done
+PID=$(sudo -Eu "${MYSQL_USER}" cat "${PID_FILE}")
+echo "done [${PID}]"

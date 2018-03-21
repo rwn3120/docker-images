@@ -1,8 +1,8 @@
 #!/bin/bash
 
-SERVICE="mysqld"
+SERVICE="sshd"
 PID_FILE="/var/run/${SERVICE}.pid"
-PID=$(cat "${PID_FILE}" 2>/dev/null)
+PID=$(sudo -E cat "${PID_FILE}" 2>/dev/null)
 
 if [ "${PID}" == "" ]; then
   echo "${SERVICE} is not running"
@@ -10,10 +10,10 @@ if [ "${PID}" == "" ]; then
 fi
 
 echo -n "Stopping ${SERVICE} [${PID}]..."
-kill "${PID}"
+sudo -E kill "${PID}"
 while [ -e "/proc/${PID}" ]; do
   echo -n "."
   sleep .5
 done
-rm -f "${SSHD_PID_FILE}"
+sudo -E rm -f "${PID_FILE}"
 echo "${SERVICE} stopped"

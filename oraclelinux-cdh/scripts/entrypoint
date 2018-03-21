@@ -1,5 +1,7 @@
 #!/bin/bash -e
 
+/usr/bin/sshd-start
+
 /usr/bin/hadoop-cluster-start
 
 if [ "$1" != "spark-shell" ]; then

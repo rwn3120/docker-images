@@ -1,0 +1,19 @@
+--build-arg HADOOP_GROUP="hadoop"
+--build-arg HADOOP_USER="hadoop"
+--build-arg CDH_MAJOR_VERSION=5
+--build-arg CDH_MINOR_VERSION=13.1
+
+# for JACKSON_DATABIND_VERSION see https://mvnrepository.com/artifact/com.cloudera.api/cloudera-manager-api/5.13.1
+--build-arg JACKSON_DATABIND_VERSION=2.1.0
+# or PARQUET_HADOOP_VERSION see https://repository.cloudera.com/artifactory/libs-release-local/com/twitter/parquet-hadoop/1.5.0-cdh5.13.1/
+--build-arg PARQUET_HADOOP_VERSION=1.5.0
+# for JACKSON_DATABIND_VERSION see https://mvnrepository.com/artifact/com.cloudera.api/cloudera-manager-api/5.13.1
+--build-arg JACKSON_DATABIND_VERSION=2.4.4
+
+# for AWS_SDK_BUNDLE see https://mvnrepository.com/artifact/org.apache.hadoop/hadoop-aws/2.6.0-cdh5.13.1
+--build-arg AWS_SDK_BUNDLE=1.11.134
+
+# for package versions see https://www.cloudera.com/documentation/enterprise/release-notes/topics/cdh_vd_cdh_package_tarball_513.html#cm_vd_cdh_package_tarball_513
+--build-arg HADOOP_VERSION=2.6.0
+--build-arg SPARK_VERSION=1.6.0
+--build-arg HIVE_VERSION=1.1.0

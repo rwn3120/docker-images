@@ -14,8 +14,8 @@
 -->
 <configuration>
     <property>
-            <name>yarn.nodemanager.aux-services</name>
-            <value>mapreduce_shuffle,spark_shuffle</value>
+        <name>yarn.nodemanager.aux-services</name>
+        <value>mapreduce_shuffle,spark_shuffle</value>
     </property>
     
     <property>
@@ -23,8 +23,8 @@
         <value>org.apache.hadoop.mapred.ShuffleHandler</value>
     </property>
     <property>
-            <name>yarn.nodemanager.aux-services.spark_shuffle.class</name>
-            <value>org.apache.spark.network.yarn.YarnShuffleService</value>
+        <name>yarn.nodemanager.aux-services.spark_shuffle.class</name>
+        <value>org.apache.spark.network.yarn.YarnShuffleService</value>
     </property>
     
     <!-- http://stackoverflow.com/questions/27792839/spark-fail-when-running-pi-py-example-with-yarn-client-mode -->
@@ -36,5 +36,16 @@
         <name>yarn.nodemanager.vmem-check-enabled</name>
         <value>false</value>
     </property>
+    <property>
+        <name>yarn.resourcemanager.scheduler.address</name>
+        <value>0.0.0.0:8030</value>
+    </property>
+    <property>
+        <name>yarn.resourcemanager.resource-tracker.address</name>
+        <value>0.0.0.0:8031</value>
+    </property>
+    <property>
+        <name>yarn.resourcemanager.address</name>
+        <value>0.0.0.0:8032</value>
+    </property>
 </configuration>
-

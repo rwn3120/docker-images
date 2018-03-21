@@ -9,7 +9,7 @@ if [ -e "${PID_FILE}" ]; then
 fi
 
 echo -n "Starting ${SERVICE}..."
-/usr/sbin/sshd
+sudo -E /usr/sbin/sshd
 
-PID=$(cat "${PID_FILE}")
+PID=$(sudo -E cat "${PID_FILE}")
 echo "done [${PID}]"

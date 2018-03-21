@@ -1,0 +1,17 @@
+#!/bin/bash -e
+
+echo "Booting up hadoop cluster..."
+echo -en "     ... "
+sudo -Eu "${HADOOP_USER}" "${HADOOP_HOME}/sbin/hadoop-daemon.sh" start namenode
+echo -en "     ... "
+sudo -Eu "${HADOOP_USER}" "${HADOOP_HOME}/sbin/hadoop-daemon.sh" start secondarynamenode
+echo -en "     ... "
+sudo -Eu "${HADOOP_USER}" "${HADOOP_HOME}/sbin/hadoop-daemon.sh" start datanode
+echo -en "     ... "
+sudo -Eu "${HADOOP_USER}" "${HADOOP_HOME}/sbin/yarn-daemon.sh" start resourcemanager
+echo -en "     ... "
+sudo -Eu "${HADOOP_USER}" "${HADOOP_HOME}/sbin/yarn-daemon.sh" start nodemanager
+echo -en "     ... starting Hive"
+sudo -Eu "${HADOOP_USER}" "${HIVE_HOME}/bin/hive" --service hiveserver2 &>>/tmp/hive-$(date +'%s').log &
+sudo -Eu "${HADOOP_USER}" "${SPARK_HOME}/sbin/start-all.sh"
+echo "     ...done"

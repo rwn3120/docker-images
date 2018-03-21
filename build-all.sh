@@ -9,12 +9,12 @@ SCRIPT_DIR=$(dirname "${SCRIPT}")
 BUILD_SCRIPT="${SCRIPT_DIR}/build.sh"
 
 # images (sorted)
-declare -a IMAGES=("base-image"
-                   "debian-base" "debian-dev" 
-                   "oraclelinux-java-8" "oraclelinux-mysql-5.7" "oraclelinux-cdh-5.13.1")
+declare -a IMAGES=("debian"
+                   "base-image"
+                   "oraclelinux-java" "oraclelinux-mysql" "oraclelinux-cdh")
 
 ## now loop through the above array
 for IMAGE in "${IMAGES[@]}"; do
     out "Building ${IMAGE}"
-    "${BUILD_SCRIPT}" "${@}" "${SCRIPT_DIR}/${IMAGE}/Dockerfile"
+    "${BUILD_SCRIPT}" "${@}" "${SCRIPT_DIR}/${IMAGE}"
 done
