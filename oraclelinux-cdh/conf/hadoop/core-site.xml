@@ -28,4 +28,18 @@
         <value>hdfs://localhost</value>
         <description>Enter your NameNode hostname</description>
     </property>
+
+<!-- hadoop proxy user -->
+    <property>
+        <name>hadoop.proxyuser.hadoop.hosts</name>
+        <value>*</value>
+    </property>
+    <property>
+        <name>hadoop.proxyuser.hadoop.groups</name>
+        <value>*</value>
+    </property>
+    <property>
+        <name>hadoop.proxyuser.hadoop.users</name>
+        <value>*</value>
+    </property>
 </configuration>

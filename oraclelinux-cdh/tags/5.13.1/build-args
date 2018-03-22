@@ -17,3 +17,4 @@
 --build-arg HADOOP_VERSION=2.6.0
 --build-arg SPARK_VERSION=1.6.0
 --build-arg HIVE_VERSION=1.1.0
+--build-arg OOZIE_VERSION=4.1.0

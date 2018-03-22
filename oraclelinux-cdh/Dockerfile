@@ -14,6 +14,7 @@ ARG AWS_SDK_BUNDLE
 ARG HADOOP_VERSION
 ARG SPARK_VERSION
 ARG HIVE_VERSION
+ARG OOZIE_VERSION
 
 # Set env
 ENV CDH_VERSION="${CDH_MAJOR_VERSION}.${CDH_MINOR_VERSION}" \
@@ -28,6 +29,7 @@ ENV CDH_HOME="${HADOOP_USER_HOME}/cdh${CDH_VERSION}"
 ENV HADOOP_HOME="${CDH_HOME}/hadoop-${HADOOP_VERSION}" \
     SPARK_HOME="${CDH_HOME}/spark-${SPARK_VERSION}" \
     HIVE_HOME="${CDH_HOME}/hive-${HIVE_VERSION}" \
+    OOZIE_HOME="${CDH_HOME}/oozie-${OOZIE_VERSION}" \
     HDFS_HOME="${HADOOP_USER_HOME}/hdfs" \
     YARN_LOGS="${HADOOP_USER_HOME}/logs/yarn" \
     \
@@ -35,10 +37,11 @@ ENV HADOOP_HOME="${CDH_HOME}/hadoop-${HADOOP_VERSION}" \
     \
     HADOOP_DOWNLOAD_LINK="http://archive.cloudera.com/cdh${CDH_MAJOR_VERSION}/cdh/${CDH_MAJOR_VERSION}/hadoop-${HADOOP_VERSION}-cdh${CDH_VERSION}.tar.gz" \
     SPARK_DOWNLOAD_LINK="http://archive.cloudera.com/cdh${CDH_MAJOR_VERSION}/cdh/${CDH_MAJOR_VERSION}/spark-${SPARK_VERSION}-cdh${CDH_VERSION}.tar.gz" \
-    HIVE_DOWNLOAD_LINK="http://archive.cloudera.com/cdh${CDH_MAJOR_VERSION}/cdh/${CDH_MAJOR_VERSION}/hive-${HIVE_VERSION}-cdh${CDH_VERSION}.tar.gz"
+    HIVE_DOWNLOAD_LINK="http://archive.cloudera.com/cdh${CDH_MAJOR_VERSION}/cdh/${CDH_MAJOR_VERSION}/hive-${HIVE_VERSION}-cdh${CDH_VERSION}.tar.gz" \
+    OOZIE_DOWNLOAD_LINK="http://archive.cloudera.com/cdh${CDH_MAJOR_VERSION}/cdh/${CDH_MAJOR_VERSION}/oozie-${OOZIE_VERSION}-cdh${CDH_VERSION}.tar.gz"
 
 # Set PATH
-ENV PATH="${PATH}:${HADOOP_HOME}/bin:${HADOOP_HOME}/sbin:${SPARK_HOME}/bin:${HIVE_HOME}/bin"
+ENV PATH="${PATH}:${HADOOP_HOME}/bin:${HADOOP_HOME}/sbin:${SPARK_HOME}/bin:${HIVE_HOME}/bin:${OOZIE_HOME}/bin"
 
 # CREATE hadoop USER (with password hadoop), WE DO TRUST a lot TO HADOOP USER ;)
 RUN groupadd "${HADOOP_GROUP}" &&\
@@ -51,7 +54,7 @@ WORKDIR "${HADOOP_USER_HOME}"
 
 # Make Data and Log Directories
 RUN mkdir -p \
-      "${CDH_HOME}" "${HADOOP_HOME}" "${SPARK_HOME}" "${HIVE_HOME}" \
+      "${CDH_HOME}" "${HADOOP_HOME}" "${SPARK_HOME}" "${HIVE_HOME}" "${OOZIE_HOME}" \
       "${HDFS_HOME}/namenode" "${HDFS_HOME}/datanode" \
       "${HADOOP_HOME}/tmp" "${HADOOP_HOME}/libs"
 
@@ -64,6 +67,9 @@ RUN wget --progress=bar:force "${HADOOP_DOWNLOAD_LINK}" -O "archive.tar.gz" &&\
     \
     wget --progress=bar:force "${HIVE_DOWNLOAD_LINK}" -O "archive.tar.gz" &&\
     tar xzf "archive.tar.gz" --directory "${HIVE_HOME}" --strip 1 &&\
+    \
+    wget --progress=bar:force "${OOZIE_DOWNLOAD_LINK}" -O "archive.tar.gz" &&\
+    tar xzf "archive.tar.gz" --directory "${OOZIE_HOME}" --strip 1 &&\
     rm -f "archive.tar.gz"
 
 # Download libs
@@ -72,20 +78,20 @@ RUN cp "${SPARK_HOME}/lib/spark-${SPARK_VERSION}-cdh${CDH_VERSION}-yarn-shuffle.
         "http://central.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/${JACKSON_DATABIND_VERSION}/jackson-databind-${JACKSON_DATABIND_VERSION}.jar" \
         -P "${HADOOP_HOME}/share/hadoop/yarn/" &&\
     wget --progress=bar:force \
-            "http://central.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/${JACKSON_DATABIND_VERSION}/jackson-core-${JACKSON_DATABIND_VERSION}.jar" \
-            -P "${HADOOP_HOME}/share/hadoop/yarn/" &&\
+        "http://central.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/${JACKSON_DATABIND_VERSION}/jackson-core-${JACKSON_DATABIND_VERSION}.jar" \
+        -P "${HADOOP_HOME}/share/hadoop/yarn/" &&\
     wget --progress=bar:force \
-            "http://central.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/${JACKSON_DATABIND_VERSION}/jackson-annotations-${JACKSON_DATABIND_VERSION}.jar" \
-            -P "${HADOOP_HOME}/share/hadoop/yarn/" &&\
+        "http://central.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/${JACKSON_DATABIND_VERSION}/jackson-annotations-${JACKSON_DATABIND_VERSION}.jar" \
+        -P "${HADOOP_HOME}/share/hadoop/yarn/" &&\
     wget --progress=bar:force \
-            "https://repository.cloudera.com/content/repositories/releases/org/apache/hadoop/hadoop-aws/${HADOOP_VERSION}-cdh${CDH_VERSION}/hadoop-aws-${HADOOP_VERSION}-cdh${CDH_VERSION}.jar" \
-            -P "${HADOOP_HOME}/share/hadoop/yarn/" &&\
+        "https://repository.cloudera.com/content/repositories/releases/org/apache/hadoop/hadoop-aws/${HADOOP_VERSION}-cdh${CDH_VERSION}/hadoop-aws-${HADOOP_VERSION}-cdh${CDH_VERSION}.jar" \
+        -P "${HADOOP_HOME}/share/hadoop/yarn/" &&\
     wget --progress=bar:force \
-            "http://central.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/${AWS_SDK_BUNDLE}/aws-java-sdk-bundle-${AWS_SDK_BUNDLE}.jar" \
-            -P "${HADOOP_HOME}/share/hadoop/yarn/" &&\
+        "http://central.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/${AWS_SDK_BUNDLE}/aws-java-sdk-bundle-${AWS_SDK_BUNDLE}.jar" \
+        -P "${HADOOP_HOME}/share/hadoop/yarn/" &&\
     wget --progress=bar:force \
-            "https://repository.cloudera.com/artifactory/libs-release-local/com/twitter/parquet-hadoop/${PARQUET_HADOOP_VERSION}-cdh${CDH_VERSION}/parquet-hadoop-${PARQUET_HADOOP_VERSION}-cdh${CDH_VERSION}.jar" \
-            -P "${HADOOP_HOME}/share/hadoop/yarn/"
+        "https://repository.cloudera.com/artifactory/libs-release-local/com/twitter/parquet-hadoop/${PARQUET_HADOOP_VERSION}-cdh${CDH_VERSION}/parquet-hadoop-${PARQUET_HADOOP_VERSION}-cdh${CDH_VERSION}.jar" \
+        -P "${HADOOP_HOME}/share/hadoop/yarn/"
 
 # Setup hadoop
 ADD conf/hadoop/core-site.xml \
@@ -95,7 +101,7 @@ ADD conf/hadoop/core-site.xml \
     conf/hadoop/hadoop-env.sh \
     "${HADOOP_HOME}/etc/hadoop"/
 
-# Setup spark
+# Setup spark, hive, oozie, format hdfs
 RUN cp "${SPARK_HOME}/conf/slaves.template" "${SPARK_HOME}/conf/slaves" &&\
     cp "${SPARK_HOME}/conf/spark-defaults.conf.template" "${SPARK_HOME}/conf/spark-defaults.conf" &&\
     echo 'spark.dynamicAllocation.enabled true' >> "${SPARK_HOME}/conf/spark-defaults.conf" &&\
@@ -106,14 +112,21 @@ RUN cp "${SPARK_HOME}/conf/slaves.template" "${SPARK_HOME}/conf/slaves" &&\
     echo "export HADOOP_HOME=${HADOOP_HOME}" >> "${SPARK_HOME}/conf/spark-env.sh" &&\
     echo 'export SPARK_DIST_CLASSPATH=`"${HADOOP_HOME}/bin/hadoop" classpath`'  >> "${SPARK_HOME}/conf/spark-env.sh" &&\
     echo "export SPARK_MASTER_IP=hadoop-master" >> "${SPARK_HOME}/conf/spark-env.sh" &&\
-    echo "export HADOOP_CONF_DIR=${HADOOP_HOME}/etc/hadoop" >> "${SPARK_HOME}/conf/spark-env.sh"
-
-# Format hdfs, prepare env
-RUN hdfs namenode -format &&\
+    echo "export HADOOP_CONF_DIR=${HADOOP_HOME}/etc/hadoop" >> "${SPARK_HOME}/conf/spark-env.sh" &&\
+    \
+    echo "export HADOOP_HOME=${HADOOP_HOME}" >> "${HIVE_HOME}/conf/hive-env.sh" &&\
+    \
+    tar xzf "${OOZIE_HOME}/oozie-hadooplibs-${OOZIE_VERSION}-cdh${CDH_VERSION}.tar.gz" --directory "${OOZIE_HOME}" --strip 1 &&\
+    mv "${OOZIE_HOME}/hadooplibs/hadooplib-${HADOOP_VERSION}-cdh${CDH_VERSION}.oozie-${OOZIE_VERSION}-cdh${CDH_VERSION}" "${OOZIE_HOME}/libext" &&\
+    "${OOZIE_HOME}/bin/oozie-setup.sh" prepare-war &&\
+    "${OOZIE_HOME}/bin/ooziedb.sh" create -sqlfile "${OOZIE_HOME}/oozie.sql" -run &&\
+    rm -rf "${OOZIE_HOME}/hadooplibs" "${OOZIE_HOME}"/*.tar.gz &&\
+    \
+    hdfs namenode -format &&\
     ssh-setup &&\
     sudo sed -i 's/#PermitEmptyPasswords .*/PermitEmptyPasswords yes/' /etc/ssh/sshd_config &&\
     sudo passwd -d "${HADOOP_USER}" &&\
-    find "${HADOOP_USER_HOME}" -type d -exec chmod 777 {} \;
+    find "${HADOOP_USER_HOME}" -type d -exec chmod a+rwx {} \; 
 
 # Add scripts
 ADD scripts/hadoop-cluster-start \
@@ -122,6 +135,8 @@ ADD scripts/hadoop-cluster-start \
     /usr/bin/
 
 # Expose ports
+# OOZIE
+EXPOSE 11000 11001 11443
 # HDFS Namenode (dfs.http.address, dfs.https.address)
 EXPOSE 50070 50470
 # HDFS Datanodes (dfs.datanode.http.address, dfs.datanode.https.address, dfs.datanode.address, dfs.datanode.ipc.address)
