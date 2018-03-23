@@ -41,5 +41,5 @@
     <property>
         <name>hadoop.proxyuser.hadoop.users</name>
         <value>*</value>
-    </property>
+  </property>
 </configuration>

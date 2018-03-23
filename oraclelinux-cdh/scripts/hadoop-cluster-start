@@ -11,9 +11,14 @@ echo -en "     ... "
 sudo -Eu "${HADOOP_USER}" "${HADOOP_HOME}/sbin/yarn-daemon.sh" start resourcemanager
 echo -en "     ... "
 sudo -Eu "${HADOOP_USER}" "${HADOOP_HOME}/sbin/yarn-daemon.sh" start nodemanager
-echo -en "     ... starting hive"
-sudo -Eu "${HADOOP_USER}" "${HIVE_HOME}/bin/hive" --service hiveserver2 &>>/tmp/hive-$(date +'%s').log &
-echo -en "     ... starting oozie"
-sudo -Eu "${HADOOP_USER}" "${OOZIE_HOME}/bin/oozied.sh" start
+if [ "${HIVE_DISABLED:-false}" == "false" ]; then
+    echo -en "     ... starting hive"
+    sudo -Eu "${HADOOP_USER}" "${HIVE_HOME}/bin/hive" --service hiveserver2 &>>/tmp/hive-$(date +'%s').log &
+fi
+if [ "${OOZIE_DISABLED:-false}" == "false" ]; then
+    echo -en "     ... starting oozie"
+    sudo -Eu "${HADOOP_USER}" "${OOZIE_HOME}/bin/oozied.sh" start
+fi
+echo -en "     ... "
 sudo -Eu "${HADOOP_USER}" "${SPARK_HOME}/sbin/start-all.sh"
 echo "     ...done"

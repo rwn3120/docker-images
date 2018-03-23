@@ -25,13 +25,7 @@ RUN groupadd "${MYSQL_USER}" &&\
     rpm -i *.rpm &&\
     \
     rm -f *.rpm  &&\
-    yum clean all &&\
-    \
-    mysqld \
-      --user="${MYSQL_USER}" \
-      --log-error-verbosity=3 \
-      --initialize-insecure &&\
-    chmod 666 /var/log/mysqld.log
+    yum clean all
 
 # Add scripts
 ADD scripts/mysqld-start \

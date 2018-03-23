@@ -3,6 +3,17 @@
 SERVICE="mysqld"
 PID_FILE="/var/run/${SERVICE}/${SERVICE}.pid"
 
+
+if [ ! -f "/var/lib/mysql/ibdata1" ]; then
+    echo "Initializing ${SERVICE}"
+    sudo -Eu "${MYSQL_USER}" mysqld \
+        --user="${MYSQL_USER}" \
+        --log-error-verbosity=3 \
+        --explicit_defaults_for_timestamp \
+        --initialize-insecure
+    chmod 666 /var/log/mysqld.log
+fi
+
 if [ -e "${PID_FILE}" ]; then
   PID=$(sudo -Eu "${MYSQL_USER}" cat "${PID_FILE}" 2>/dev/null)
   if [ "${PID}" != "" ]; then

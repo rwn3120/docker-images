@@ -3,11 +3,11 @@
 echo "Stopping hadoop cluster..."
 echo -en "     ... "
 sudo -Eu "${HADOOP_USER}" "${SPARK_HOME}/sbin/stop-all.sh"
-echo -e  "     ... stopping Hive"
+echo -e  "     ... stopping hive"
 for PID in $(sudo ps axf | grep "/hive" | grep -v grep | awk '{print $1}' | sort -n); do
     sudo kill -9 "${PID}"
 done
-echo -en "     ... stoping oozie"
+echo -en "     ... stopping oozie"
 sudo -Eu "${HADOOP_USER}" "${OOZIE_HOME}/bin/oozied.sh" stop
 echo -en "     ... "
 sudo -Eu "${HADOOP_USER}" "${HADOOP_HOME}/sbin/yarn-daemon.sh" stop nodemanager

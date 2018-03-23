@@ -29,9 +29,14 @@
     <property>
         <name>dfs.datanode.data.dir</name>
         <value>file:/home/hadoop/hdfs/datanode</value>
+    </property>    
+    <property>
+        <name>dfs.namenode.rpc-bind-host</name>
+        <value>0.0.0.0</value>
     </property>
     <property>
         <name>dfs.webhdfs.enabled</name>
         <value>true</value>
     </property>
+    
 </configuration>
